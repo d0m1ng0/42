@@ -1,0 +1,621 @@
+# **************************************************************************** #
+#                                                                              #
+#                                                         :::      ::::::::    #
+#    notes-linked_lists                                 :+:      :+:    :+:    #
+#                                                     +:+ +:+         +:+      #
+#    By: dverdini <dverdini@student.42.fr>          +#+  +:+       +#+         #
+#                                                 +#+#+#+#+#+   +#+            #
+#    Created: 2025/11/22 01:35:27 by dverdini          #+#    #+#              #
+#    Updated: 2025/11/22 01:54:42 by dverdini         ###   ########.fr        #
+#                                                                              #
+# **************************************************************************** #
+
+
+LINKED LIST TUTORIAL 
+Tempo stimato: 45-60 minuti
+
+LEZIONE 1: IL NODO (10 minuti)
+1.1 COS'È UN NODO
+Un nodo è una scatola con due parti:
+
+Code
+
+
+┌─────────────────┐
+│   CONTENT       │  <- Il dato (void *)
+├─────────────────┤
+│   NEXT          │  <- Puntatore al prossimo nodo (struct s_list *)
+└─────────────────┘
+In C:
+
+C
+
+
+typedef struct s_list
+{
+    void            *content;
+    struct s_list   *next;
+}   t_list;
+1.2 ESERCIZIO 1
+Guarda questo codice e disegna mentalmente il nodo:
+
+C
+
+
+t_list *nodo = malloc(sizeof(t_list));
+nodo->content = "Ciao";
+nodo->next = NULL;
+Disegno:
+
+Code
+
+
+┌─────────────────┐
+│  "Ciao"         │
+├─────────────────┤
+│  NULL           │
+└─────────────────┘
+CHECKPOINT 1: Hai capito? [Scrivi "ok" per continuare]
+
+LEZIONE 2: LA CATENA (10 minuti)
+2.1 COLLEGARE I NODI
+Ora colleghiamo 3 nodi:
+
+C
+
+
+t_list *primo = malloc(sizeof(t_list));
+t_list *secondo = malloc(sizeof(t_list));
+t_list *terzo = malloc(sizeof(t_list));
+
+primo->content = "A";
+secondo->content = "B";
+terzo->content = "C";
+
+primo->next = secondo;   // Collego!
+secondo->next = terzo;   // Collego!
+terzo->next = NULL;      // Fine!
+Disegno:
+
+Code
+
+
+HEAD
+ │
+ ↓
+┌───┬────┐    ┌───┬────┐    ┌───┬────┐
+│ A │  ──┼───→│ B │  ──┼───→│ C │NULL│
+└───┴────┘    └───┴────┘    └───┴────┘
+2.2 ESERCIZIO 2
+Come si accede al contenuto del secondo nodo partendo da HEAD?
+
+C
+
+
+// Risposta:
+primo->next->content  // "B"
+CHECKPOINT 2: Hai capito? [Scrivi "ok" per continuare]
+
+LEZIONE 3: CREARE UN NODO - ft_lstnew (5 minuti)
+3.1 LA FUNZIONE
+C
+
+
+t_list *ft_lstnew(void *content)
+{
+    t_list *new;
+
+    new = malloc(sizeof(t_list));
+    if (!new)
+        return (NULL);
+    new->content = content;
+    new->next = NULL;
+    return (new);
+}
+Prima:
+
+Code
+
+
+(niente)
+Dopo ft_lstnew("Ciao"):
+
+Code
+
+
+┌────────┬────┐
+│ "Ciao" │NULL│
+└────────┴────┘
+3.2 ESERCIZIO 3
+Crea mentalmente un nodo con content = 42:
+
+C
+
+
+t_list *nodo = ft_lstnew((void *)42);
+CHECKPOINT 3: Fatto? [Scrivi "ok"]
+
+LEZIONE 4: AGGIUNGERE IN TESTA - ft_lstadd_front (10 minuti)
+4.1 IL CONCETTO
+Voglio aggiungere un nodo all'inizio della lista.
+
+Prima:
+
+Code
+
+
+HEAD
+ │
+ ↓
+┌───┬────┐    ┌───┬────┐
+│ A │  ──┼───→│ B │NULL│
+└───┴────┘    └───┴────┘
+
+NEW
+ │
+ ↓
+┌───┬────┐
+│ X │NULL│
+└───┴────┘
+Dopo ft_lstadd_front(&HEAD, NEW):
+
+Code
+
+
+HEAD
+ │
+ ↓
+┌───┬────┐    ┌───┬────┐    ┌───┬────┐
+│ X │  ──┼───→│ A │  ──┼───→│ B │NULL│
+└───┴────┘    └───┴────┘    └───┴────┘
+4.2 LA FUNZIONE
+C
+
+
+void ft_lstadd_front(t_list **lst, t_list *new)
+{
+    if (!lst || !new)
+        return;
+    new->next = *lst;    // Step 1: NEW punta al vecchio primo
+    *lst = new;          // Step 2: HEAD punta a NEW
+}
+Perché **lst?
+
+Perché devo modificare HEAD stesso, non una copia!
+
+Code
+
+
+&HEAD → HEAD → [A]
+  ^^      ^
+  │       │
+  │       └─ Questo è *lst
+  │
+  └─ Questo è lst (il puntatore A HEAD)
+4.3 ESERCIZIO 4
+Disegna passo-passo questa operazione:
+
+C
+
+
+t_list *lista = ft_lstnew("B");
+t_list *new = ft_lstnew("A");
+ft_lstadd_front(&lista, new);
+CHECKPOINT 4: Hai disegnato? [Scrivi "ok"]
+
+LEZIONE 5: CONTARE I NODI - ft_lstsize (5 minuti)
+5.1 LA FUNZIONE
+C
+
+
+int ft_lstsize(t_list *lst)
+{
+    int count = 0;
+
+    while (lst)           // Finché non arrivo a NULL
+    {
+        count++;          // Conto
+        lst = lst->next;  // Vado avanti
+    }
+    return (count);
+}
+Animazione:
+
+Code
+
+
+count = 0
+         ↓
+┌───┬────┐    ┌───┬────┐    ┌───┬────┐
+│ A │  ──┼───→│ B │  ──┼───→│ C │NULL│
+└───┴────┘    └───┴────┘    └───┴────┘
+
+count = 1
+              ↓
+┌───┬────┐    ┌───┬────┐    ┌───┬────┐
+│ A │  ──┼───→│ B │  ──┼───→│ C │NULL│
+└───┴────┘    └───┴────┘    └───┴────┘
+
+count = 2
+                           ↓
+┌───┬────┐    ┌───┬────┐    ┌───┬────┐
+│ A │  ──┼───→│ B │  ──┼───→│ C │NULL│
+└───┴────┘    └───┴────┘    └───┴────┘
+
+count = 3
+                                     ↓
+                                   NULL
+return 3
+CHECKPOINT 5: Chiaro? [Scrivi "ok"]
+
+LEZIONE 6: TROVARE L'ULTIMO - ft_lstlast (5 minuti)
+6.1 LA FUNZIONE
+C
+
+
+t_list *ft_lstlast(t_list *lst)
+{
+    if (!lst)
+        return (NULL);
+    while (lst->next)      // Finché il PROSSIMO non è NULL
+        lst = lst->next;
+    return (lst);          // Ritorno l'ultimo
+}
+Differenza con ft_lstsize:
+
+while (lst) → va fino a NULL, poi esce
+while (lst->next) → si ferma sull'ultimo nodo (quello prima di NULL)
+Code
+
+
+┌───┬────┐    ┌───┬────┐    ┌───┬────┐
+│ A │  ──┼───→│ B │  ──┼───→│ C │NULL│
+└───┴────┘    └───┴────┘    └───┴────┘
+                              ↑
+                              │
+                        Ritorna questo!
+CHECKPOINT 6: Capito? [Scrivi "ok"]
+
+LEZIONE 7: AGGIUNGERE IN CODA - ft_lstadd_back (10 minuti)
+7.1 IL CONCETTO
+Voglio aggiungere un nodo alla fine.
+
+Prima:
+
+Code
+
+
+HEAD
+ │
+ ↓
+┌───┬────┐    ┌───┬────┐
+│ A │  ──┼───→│ B │NULL│
+└───┴────┘    └───┴────┘
+
+NEW
+ │
+ ↓
+┌───┬────┐
+│ C │NULL│
+└───┴────┘
+Dopo:
+
+Code
+
+
+HEAD
+ │
+ ↓
+┌───┬────┐    ┌───┬────┐    ┌───┬────┐
+│ A │  ──┼───→│ B │  ──┼───→│ C │NULL│
+└───┴────┘    └───┴────┘    └───┴────┘
+7.2 LA FUNZIONE
+C
+
+
+void ft_lstadd_back(t_list **lst, t_list *new)
+{
+    t_list *last;
+
+    if (!lst || !new)
+        return;
+    if (*lst == NULL)         // Lista vuota?
+    {
+        *lst = new;           // NEW diventa il primo
+        return;
+    }
+    last = ft_lstlast(*lst);  // Trova l'ultimo
+    last->next = new;         // Collega
+}
+7.3 CASO SPECIALE: LISTA VUOTA
+Se la lista è vuota:
+
+Code
+
+
+HEAD = NULL
+
+NEW
+ │
+ ↓
+┌───┬────┐
+│ A │NULL│
+└───┴────┘
+Dopo ft_lstadd_back(&HEAD, NEW):
+
+Code
+
+
+HEAD
+ │
+ ↓
+┌───┬────┐
+│ A │NULL│
+└───┴────┘
+CHECKPOINT 7: Tutto ok? [Scrivi "ok"]
+
+LEZIONE 8: CANCELLARE UN NODO - ft_lstdelone (5 minuti)
+8.1 LA FUNZIONE
+C
+
+
+void ft_lstdelone(t_list *lst, void (*del)(void *))
+{
+    if (!lst || !del)
+        return;
+    del(lst->content);   // Cancella il contenuto
+    free(lst);           // Libera il nodo
+}
+8.2 COS'È void (*del)(void *)?
+È un puntatore a funzione!
+
+Esempio di funzione del:
+
+C
+
+
+void del_string(void *content)
+{
+    free(content);
+}
+Uso:
+
+C
+
+
+t_list *nodo = ft_lstnew(malloc(10));
+ft_lstdelone(nodo, del_string);
+Prima:
+
+Code
+
+
+┌────────┬────┐
+│ [mem]  │NULL│
+└────────┴────┘
+Dopo:
+
+Code
+
+
+(tutto liberato)
+CHECKPOINT 8: Ok? [Scrivi "ok"]
+
+LEZIONE 9: CANCELLARE TUTTA LA LISTA - ft_lstclear (10 minuti)
+9.1 IL PROBLEMA
+Voglio cancellare tutti i nodi uno per uno.
+
+Code
+
+
+HEAD
+ │
+ ↓
+┌───┬────┐    ┌───┬────┐    ┌───┬────┐
+│ A │  ──┼───→│ B │  ──┼───→│ C │NULL│
+└───┴────┘    └───┴────┘    └───┴────┘
+Ma se faccio free(HEAD) subito, perdo il riferimento al resto!
+
+9.2 LA SOLUZIONE
+Salvo next prima di cancellare:
+
+C
+
+
+void ft_lstclear(t_list **lst, void (*del)(void *))
+{
+    t_list *tmp;
+
+    if (!lst || !del)
+        return;
+    while (*lst)
+    {
+        tmp = (*lst)->next;      // Salvo il prossimo
+        ft_lstdelone(*lst, del); // Cancello il corrente
+        *lst = tmp;              // Vado avanti
+    }
+    *lst = NULL;
+}
+Animazione:
+
+Code
+
+
+Step 1: tmp = B
+┌───┬────┐    ┌───┬────┐    ┌───┬────┐
+│ A │  ──┼───→│ B │  ──┼───→│ C │NULL│
+└───┴────┘    └───┴────┘    └───┴────┘
+  ↓            ↑
+ DEL          tmp
+
+Step 2: HEAD = tmp (B)
+              ┌───┬────┐    ┌───┬────┐
+              │ B │  ──┼───→│ C │NULL│
+              └───┴────┘    └───┴────┘
+               ↓
+              HEAD
+
+Step 3: tmp = C, cancello B...
+
+Step 4: tmp = NULL, cancello C...
+
+HEAD = NULL
+CHECKPOINT 9: Capito il trucco del tmp? [Scrivi "ok"]
+
+LEZIONE 10: ITERARE - ft_lstiter (5 minuti)
+10.1 LA FUNZIONE
+C
+
+
+void ft_lstiter(t_list *lst, void (*f)(void *))
+{
+    if (!lst || !f)
+        return;
+    while (lst)
+    {
+        f(lst->content);    // Applico la funzione
+        lst = lst->next;    // Vado avanti
+    }
+}
+Esempio:
+
+C
+
+
+void print_content(void *content)
+{
+    printf("%s\n", (char *)content);
+}
+
+t_list *lista = ...;  // ["Ciao", "come", "stai"]
+ft_lstiter(lista, print_content);
+// Output:
+// Ciao
+// come
+// stai
+CHECKPOINT 10: Chiaro? [Scrivi "ok"]
+
+LEZIONE 11: MAPPARE - ft_lstmap (10 minuti) ⚠️ LA PIÙ DIFFICILE
+11.1 IL CONCETTO
+Creo una NUOVA lista applicando una funzione a ogni elemento.
+
+Lista originale:
+
+Code
+
+
+┌───┬────┐    ┌───┬────┐    ┌───┬────┐
+│ 1 │  ──┼───→│ 2 │  ──┼───→│ 3 │NULL│
+└───┴────┘    └───┴────┘    └───┴────┘
+Funzione: x * 2
+
+Nuova lista:
+
+Code
+
+
+┌───┬────┐    ┌───┬────┐    ┌───┬────┐
+│ 2 │  ──┼───→│ 4 │  ──┼───→│ 6 │NULL│
+└───┴────┘    └───┴────┘    └───┴────┘
+11.2 LA FUNZIONE
+C
+
+
+t_list *ft_lstmap(t_list *lst, void *(*f)(void *), void (*del)(void *))
+{
+    t_list *new_list;
+    t_list *new_node;
+    void *new_content;
+
+    if (!lst || !f || !del)
+        return (NULL);
+    new_list = NULL;
+    while (lst)
+    {
+        new_content = f(lst->content);           // Applico f
+        new_node = ft_lstnew(new_content);       // Creo nuovo nodo
+        if (!new_node)                           // Se fallisce...
+        {
+            del(new_content);                    // Pulisco
+            ft_lstclear(&new_list, del);         // Pulisco tutto
+            return (NULL);
+        }
+        ft_lstadd_back(&new_list, new_node);     // Aggiungo alla nuova lista
+        lst = lst->next;                         // Vado avanti
+    }
+    return (new_list);
+}
+11.3 PERCHÉ È COMPLICATA?
+Gestione errori! Se malloc fallisce a metà:
+
+Devo cancellare la nuova lista parziale
+Devo cancellare il contenuto appena creato
+Ma NON devo toccare la lista originale!
+CHECKPOINT 11: Questa è tosta, ok se non è chiarissima subito! [Scrivi "ok"]
+
+RIEPILOGO FINALE (5 minuti)
+TUTTE LE FUNZIONI IN ORDINE LOGICO
+ft_lstnew - Crea un nodo
+ft_lstadd_front - Aggiungi in testa
+ft_lstadd_back - Aggiungi in coda
+ft_lstsize - Conta nodi
+ft_lstlast - Trova ultimo
+ft_lstiter - Applica funzione a tutti
+ft_lstmap - Crea nuova lista con funzione
+ft_lstdelone - Cancella un nodo
+ft_lstclear - Cancella tutta la lista
+ORDINE DI IMPLEMENTAZIONE CONSIGLIATO
+Code
+
+
+ft_lstnew          (facile, parti da qui)
+   ↓
+ft_lstsize         (facile, per testare)
+   ↓
+ft_lstlast         (facile, simile a size)
+   ↓
+ft_lstadd_front    (medio, concetto importante)
+   ↓
+ft_lstadd_back     (medio, usa lstlast)
+   ↓
+ft_lstdelone       (medio, gestione memoria)
+   ↓
+ft_lstclear        (medio-difficile, usa delone)
+   ↓
+ft_lstiter         (facile, buon esercizio)
+   ↓
+ft_lstmap          (difficile, lascia per ultima!)
+TEST FINALE
+Disegna questa sequenza:
+
+C
+
+
+t_list *lista = NULL;
+ft_lstadd_back(&lista, ft_lstnew("A"));
+ft_lstadd_front(&lista, ft_lstnew("B"));
+ft_lstadd_back(&lista, ft_lstnew("C"));
+Risultato atteso:
+
+Code
+
+
+┌───┬────┐    ┌───┬────┐    ┌───┬────┐
+│ B │  ──┼───→│ A │  ──┼───→│ C │NULL│
+└───┴────┘    └───┴────┘    └───┴────┘
+🎯 COMPLETATO!
+Tempo totale: ~60 minuti
+
+Ora sei pronto per:
+
+Finire la parte 2 della libft
+Fare il bonus con le linked list
+Spiegare le linked list nelle prossime correzioni CON COGNIZIONE DI CAUSA! 💪
+Allora Dom, vuoi fare gli esercizi dei checkpoint oppure hai domande su qualche parte specifica? 😊
+
+
+
+
+
+
+
